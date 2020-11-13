@@ -19,9 +19,9 @@ motor rightMotorC = motor(PORT11, ratio18_1, false);
 motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC);
 
 motor leftIntake = motor(PORT11, ratio6_1, true);
-motor rightIntake = motor(PORT6, ratio18_1, false);
+motor rightIntake = motor(PORT20, ratio6_1, true);
 
-motor rollerFront = motor(PORT20, ratio6_1, false);//This will become rightintake
+//motor rollerFront = motor(PORT20, ratio6_1, false);//This no longer exists, will not exist unless bevel system fails
 motor rollerBack = motor(PORT19, ratio6_1, true);
                                   // Left             Right           WHeel Circumfernece , Wheel base, Wheel Track, Units, Gear ratio
 drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, 3.25*3.14, 5, 8, inches, 84.0/60.0);
@@ -89,25 +89,24 @@ int rc_auto_loop_function_Controller1() {
     bool isActionIntake = false;
 
     if(Controller1.ButtonL1.pressing()){
-      rollerFront.spin(forward, 100, percentUnits::pct);
-
       leftIntake.spin(reverse, 100, percentUnits::pct);
+      rightIntake.spin(forward, 100, percentUnits::pct);
 
       isActionIntake = true;
     }else if (Controller1.ButtonL2.pressing()) {
-      rollerFront.spin(reverse, 100, percentUnits::pct);
+      rightIntake.spin(reverse, 100, percentUnits::pct);
       leftIntake.spin(forward, 100, percentUnits::pct);
 
       isActionIntake = true;
     }
 
     if(Controller1.ButtonR1.pressing()){
-      rollerFront.spin(forward, 100, percentUnits::pct);
+      rightIntake.spin(forward, 100, percentUnits::pct);
       rollerBack.spin(forward, 100, percentUnits::pct);
       leftIntake.spin(forward, 100, percentUnits::pct);
       isActionIntake = true;
     }else if (Controller1.ButtonR2.pressing()) {
-      rollerFront.spin(reverse, 100, percentUnits::pct);
+      rightIntake.spin(reverse, 100, percentUnits::pct);
       rollerBack.spin(reverse, 100, percentUnits::pct);
       leftIntake.spin(reverse, 100, percentUnits::pct);
       isActionIntake = true;
@@ -115,7 +114,7 @@ int rc_auto_loop_function_Controller1() {
     
     //If no intake button pressed, stop all intake motors
     if(!isActionIntake){
-      rollerFront.stop(brakeType::coast);
+      rightIntake.stop(brakeType::coast);
       rollerBack.stop(brakeType::coast);
       leftIntake.stop(brakeType::coast);
     }
