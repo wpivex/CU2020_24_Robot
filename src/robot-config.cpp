@@ -21,6 +21,7 @@ motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC)
 motor leftIntake = motor(PORT11, ratio6_1, true);
 motor rightIntake = motor(PORT20, ratio6_1, true);
 
+motor yeet = motor(PORT5,ratio6_1,true);
 //motor rollerFront = motor(PORT20, ratio6_1, false);//This no longer exists, will not exist unless bevel system fails
 motor rollerBack = motor(PORT19, ratio6_1, true);
                                   // Left             Right           WHeel Circumfernece , Wheel base, Wheel Track, Units, Gear ratio
@@ -118,6 +119,11 @@ int rc_auto_loop_function_Controller1() {
       rollerBack.stop(brakeType::coast);
       leftIntake.stop(brakeType::coast);
     }
+
+    if(Controller1.ButtonA.pressing())
+      yeet.spin(forward,100,percentUnits::pct);
+    else
+      yeet.stop(brakeType::hold);
 
     // wait before repeating the process
     wait(20, msec);
