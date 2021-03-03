@@ -1,10 +1,14 @@
 using namespace vex;
 
+#define BASE1
+
+
 extern brain Brain;
 
 // VEXcode devices
 extern drivetrain Drivetrain;
 extern controller Controller1;
+
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

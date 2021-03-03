@@ -8,22 +8,39 @@ using code = vision::code;
 brain  Brain;
 
 // VEXcode device constructors
-motor leftMotorA = motor(PORT1, ratio18_1, true);
-motor leftMotorB = motor(PORT2, ratio18_1, false);
-motor leftMotorC = motor(PORT3, ratio18_1, true);
-motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB, leftMotorC);
+#ifdef BASE1
+  motor leftMotorA = motor(PORT1, ratio18_1, true);
+  motor leftMotorB = motor(PORT2, ratio18_1, false);
+  motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
 
-motor rightMotorA = motor(PORT9, ratio18_1, false);
-motor rightMotorB = motor(PORT10, ratio18_1, true);
-motor rightMotorC = motor(PORT11, ratio18_1, false);
-motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB, rightMotorC);
+  motor rightMotorA = motor(PORT17, ratio18_1, true);
+  motor rightMotorB = motor(PORT18, ratio18_1, false);
+  motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
 
-motor leftIntake = motor(PORT11, ratio6_1, true);
+  motor leftIntake = motor(PORT15, ratio6_1, true);
+
+  motor rollerBack = motor(PORT14, ratio6_1, true);
+
+  motor yeet = motor(PORT3,ratio6_1,false);
+#else
+  motor leftMotorA = motor(PORT1, ratio18_1, true);
+  motor leftMotorB = motor(PORT2, ratio18_1, false);
+  motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
+
+  motor rightMotorA = motor(PORT9, ratio18_1, false);
+  motor rightMotorB = motor(PORT10, ratio18_1, true);
+  motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
+
+  motor leftIntake = motor(PORT12, ratio6_1, true);
+
+  motor rollerBack = motor(PORT19, ratio6_1, true);
+
+  motor yeet = motor(PORT5,ratio6_1,false);
+#endif
+
 motor rightIntake = motor(PORT20, ratio6_1, true);
 
-motor yeet = motor(PORT5,ratio6_1,true);
-//motor rollerFront = motor(PORT20, ratio6_1, false);//This no longer exists, will not exist unless bevel system fails
-motor rollerBack = motor(PORT19, ratio6_1, true);
+
                                   // Left             Right           WHeel Circumfernece , Wheel base, Wheel Track, Units, Gear ratio
 drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, 3.25*3.14, 5, 8, inches, 84.0/60.0);
 controller Controller1 = controller(primary);
