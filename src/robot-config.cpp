@@ -21,7 +21,7 @@ brain  Brain;
 
   motor rollerBack = motor(PORT14, ratio6_1, true);
 
-  motor yeet = motor(PORT3,ratio6_1,false);
+  motor yeet = motor(PORT3,ratio6_1,true);
 #else
   motor leftMotorA = motor(PORT1, ratio18_1, true);
   motor leftMotorB = motor(PORT2, ratio18_1, false);

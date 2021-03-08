@@ -1,6 +1,6 @@
 using namespace vex;
 
-#define BASE1
+#define BASE0
 
 
 extern brain Brain;
