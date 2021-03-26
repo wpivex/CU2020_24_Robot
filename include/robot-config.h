@@ -1,6 +1,6 @@
 using namespace vex;
 
-#define BASE0
+#define BASE1
 
 
 extern brain Brain;
@@ -8,6 +8,7 @@ extern brain Brain;
 // VEXcode devices
 extern drivetrain Drivetrain;
 extern controller Controller1;
+extern controller Controller2;
 
 
 /**

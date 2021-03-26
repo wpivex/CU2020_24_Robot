@@ -18,10 +18,12 @@ brain  Brain;
   motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
 
   motor leftIntake = motor(PORT15, ratio6_1, true);
+  motor rightIntake = motor(PORT16, ratio6_1, true);
 
-  motor rollerBack = motor(PORT14, ratio6_1, true);
+  motor rollerBack = motor(PORT14, ratio6_1, false);
 
-  motor yeet = motor(PORT3,ratio6_1,true);
+  motor yeet = motor(PORT3,ratio6_1,false);
+
 #else
   motor leftMotorA = motor(PORT1, ratio18_1, true);
   motor leftMotorB = motor(PORT2, ratio18_1, false);
@@ -32,19 +34,21 @@ brain  Brain;
   motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
 
   motor leftIntake = motor(PORT12, ratio6_1, true);
+  motor rightIntake = motor(PORT20, ratio6_1, true);
 
   motor rollerBack = motor(PORT19, ratio6_1, true);
 
   motor yeet = motor(PORT5,ratio6_1,false);
 #endif
 
-motor rightIntake = motor(PORT20, ratio6_1, true);
 
+motor leftMotorDrive2 = motor(PORT7, ratio18_1, true);
+motor rightMotorDrive2 = motor(PORT4, ratio18_1, true);
 
                                   // Left             Right           WHeel Circumfernece , Wheel base, Wheel Track, Units, Gear ratio
 drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, 3.25*3.14, 5, 8, inches, 84.0/60.0);
 controller Controller1 = controller(primary);
-
+controller Controller2 = controller(vex::controllerType::partner);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
@@ -140,7 +144,10 @@ int rc_auto_loop_function_Controller1() {
     if(Controller1.ButtonA.pressing())
       yeet.spin(forward,100,percentUnits::pct);
     else
-      yeet.stop(brakeType::hold);
+      yeet.stop(brakeType::coast);
+
+    leftMotorDrive2.spin(vex::directionType::rev, Controller2.Axis3.value(), vex::velocityUnits::pct);
+    rightMotorDrive2.spin(vex::directionType::fwd, Controller2.Axis2.value(), vex::velocityUnits::pct);
 
     // wait before repeating the process
     wait(20, msec);
