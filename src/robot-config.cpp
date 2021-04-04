@@ -8,45 +8,35 @@ using code = vision::code;
 brain  Brain;
 
 // VEXcode device constructors
-#ifdef BASE1
-  motor leftMotorA = motor(PORT1, ratio18_1, true);
-  motor leftMotorB = motor(PORT2, ratio18_1, false);
-  motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
+motor leftMotorA = motor(PORT2, ratio18_1, true);
+motor leftMotorB = motor(PORT1, ratio18_1, false);
+motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
 
-  motor rightMotorA = motor(PORT17, ratio18_1, true);
-  motor rightMotorB = motor(PORT18, ratio18_1, false);
-  motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
+motor rightMotorA = motor(PORT7, ratio18_1, true);
+motor rightMotorB = motor(PORT8, ratio18_1, false);
+motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
 
-  motor leftIntake = motor(PORT15, ratio6_1, true);
-  motor rightIntake = motor(PORT16, ratio6_1, true);
+motor leftIntake = motor(PORT4, ratio6_1, false);
+motor rightIntake = motor(PORT10, ratio6_1, true);
 
-  motor rollerBack = motor(PORT14, ratio6_1, false);
+motor rollerBack = motor(PORT6, ratio6_1, false);
 
-  motor yeet = motor(PORT3,ratio6_1,false);
-
-#else
-  motor leftMotorA = motor(PORT1, ratio18_1, true);
-  motor leftMotorB = motor(PORT2, ratio18_1, false);
-  motor_group LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
-
-  motor rightMotorA = motor(PORT9, ratio18_1, false);
-  motor rightMotorB = motor(PORT10, ratio18_1, true);
-  motor_group RightDriveSmart = motor_group(rightMotorA, rightMotorB);
-
-  motor leftIntake = motor(PORT12, ratio6_1, true);
-  motor rightIntake = motor(PORT20, ratio6_1, true);
-
-  motor rollerBack = motor(PORT19, ratio6_1, true);
-
-  motor yeet = motor(PORT5,ratio6_1,false);
-#endif
+motor yeet = motor(PORT9,ratio6_1,false);
 
 
-motor leftMotorDrive2 = motor(PORT7, ratio18_1, true);
-motor rightMotorDrive2 = motor(PORT4, ratio18_1, true);
+motor leftMotorADrive2 = motor(PORT11, ratio18_1, true);
+motor leftMotorBDrive2 = motor(PORT12, ratio18_1, false);
+motor_group LeftDrive2Smart = motor_group(leftMotorADrive2, leftMotorBDrive2);
+
+motor rightMotorADrive2 = motor(PORT15, ratio18_1, true);
+motor rightMotorBDrive2 = motor(PORT16, ratio18_1, false);
+motor_group RightDrive2Smart = motor_group(rightMotorADrive2, rightMotorBDrive2);
 
                                   // Left             Right           WHeel Circumfernece , Wheel base, Wheel Track, Units, Gear ratio
 drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, 3.25*3.14, 5, 8, inches, 84.0/60.0);
+
+drivetrain Drivetrain2 = drivetrain(LeftDrive2Smart, RightDrive2Smart, 3.25*3.14, 5, 8, inches, 84.0/60.0);
+
 controller Controller1 = controller(primary);
 controller Controller2 = controller(vex::controllerType::partner);
 
@@ -56,6 +46,8 @@ bool RemoteControlCodeEnabled = true;
 // define variables used for controlling motors based on controller inputs
 bool DrivetrainLNeedsToBeStopped_Controller1 = true;
 bool DrivetrainRNeedsToBeStopped_Controller1 = true;
+bool DrivetrainLNeedsToBeStopped_Controller2 = true;
+bool DrivetrainRNeedsToBeStopped_Controller2 = true;
 
 // define a task that will handle monitoring inputs from Controller1
 int rc_auto_loop_function_Controller1() {
@@ -63,6 +55,9 @@ int rc_auto_loop_function_Controller1() {
   // update the motors based on the input values
   while(true) {
     if(RemoteControlCodeEnabled) {
+      //Control Base 1:
+      //--------------------------------------------//
+
       // calculate the drivetrain motor velocities from the controller joystick axies
       // left = Axis3
       // right = Axis2
@@ -106,6 +101,53 @@ int rc_auto_loop_function_Controller1() {
         RightDriveSmart.setVelocity(drivetrainRightSideSpeed, percent);
         RightDriveSmart.spin(forward);
       }
+
+      //Control Base 2:
+      //--------------------------------------------//
+
+      // calculate the drivetrain motor velocities from the controller joystick axies
+      // left = Axis3
+      // right = Axis2
+      drivetrainLeftSideSpeed = Controller2.Axis3.position()^3;
+      drivetrainRightSideSpeed = Controller2.Axis2.position()^3;
+      
+      // check if the value is inside of the deadband range
+      if (drivetrainLeftSideSpeed < 5 && drivetrainLeftSideSpeed > -5) {
+        // check if the left motor has already been stopped
+        if (DrivetrainLNeedsToBeStopped_Controller2) {
+          // stop the left drive motor
+          LeftDrive2Smart.stop();
+          // tell the code that the left motor has been stopped
+          DrivetrainLNeedsToBeStopped_Controller2 = false;
+        }
+      } else {
+        // reset the toggle so that the deadband code knows to stop the left motor next time the input is in the deadband range
+        DrivetrainLNeedsToBeStopped_Controller2 = true;
+      }
+      // check if the value is inside of the deadband range
+      if (drivetrainRightSideSpeed < 5 && drivetrainRightSideSpeed > -5) {
+        // check if the right motor has already been stopped
+        if (DrivetrainRNeedsToBeStopped_Controller2) {
+          // stop the right drive motor
+          RightDrive2Smart.stop();
+          // tell the code that the right motor has been stopped
+          DrivetrainRNeedsToBeStopped_Controller2 = false;
+        }
+      } else {
+        // reset the toggle so that the deadband code knows to stop the right motor next time the input is in the deadband range
+        DrivetrainRNeedsToBeStopped_Controller2 = true;
+      }
+      
+      // only tell the left drive motor to spin if the values are not in the deadband range
+      if (DrivetrainLNeedsToBeStopped_Controller2) {
+        LeftDrive2Smart.setVelocity(drivetrainLeftSideSpeed, percent);
+        LeftDrive2Smart.spin(forward);
+      }
+      // only tell the right drive motor to spin if the values are not in the deadband range
+      if (DrivetrainRNeedsToBeStopped_Controller2) {
+        RightDrive2Smart.setVelocity(drivetrainRightSideSpeed, percent);
+        RightDrive2Smart.spin(forward);
+      }
     }
 
     bool isActionIntake = false;
@@ -145,9 +187,6 @@ int rc_auto_loop_function_Controller1() {
       yeet.spin(forward,100,percentUnits::pct);
     else
       yeet.stop(brakeType::coast);
-
-    leftMotorDrive2.spin(vex::directionType::rev, Controller2.Axis3.value(), vex::velocityUnits::pct);
-    rightMotorDrive2.spin(vex::directionType::fwd, Controller2.Axis2.value(), vex::velocityUnits::pct);
 
     // wait before repeating the process
     wait(20, msec);

@@ -1,8 +1,5 @@
 using namespace vex;
 
-#define BASE1
-
-
 extern brain Brain;
 
 // VEXcode devices
