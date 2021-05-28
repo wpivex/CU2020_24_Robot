@@ -1,7 +1,10 @@
 #include "robot.h"
 #include <math.h>
 
-void Robot::init(bool tether) {
+Robot::Robot(bool tether) : rollerBack(0), leftMotorA(0), leftMotorB(0), rightMotorA(0), rightMotorB(0), 
+leftIntake(0), rightIntake(0), yeet(0) {
+  controller Controller1(controllerType::primary);
+  controller Controller2(controllerType::partner);
   if (tether) {
     leftMotorA = motor(PORT1, ratio18_1, true);
     leftMotorB = motor(PORT5, ratio18_1, false);
@@ -14,118 +17,100 @@ void Robot::init(bool tether) {
     robotController = &Controller2;
     driveType = TANK;
   } else {
-    leftMotorA = motor(PORT1, ratio18_1, true);
-    leftMotorB = motor(PORT5, ratio18_1, false);
-    rightMotorA = motor(PORT3, ratio18_1, true);
-    rightMotorB = motor(PORT4, ratio18_1, false);
-    rollerBack = motor(PORT6, ratio18_1, false);
-    yeet = motor(PORT7, ratio18_1, true);
-    rightIntake = motor(PORT8, ratio6_1, true);
-    leftIntake = motor(PORT10, ratio6_1, false);
+    leftMotorA = motor(PORT11, ratio18_1, false);
+    leftMotorB = motor(PORT12, ratio18_1, true);
+    rightMotorA = motor(PORT13, ratio18_1, false);
+    rightMotorB = motor(PORT14, ratio18_1, true);
+    rollerBack = motor(PORT18, ratio18_1, false);
+    yeet = motor(PORT19, ratio6_1, false);
+    rightIntake = motor(PORT17, ratio6_1, true);
+    leftIntake = motor(PORT16, ratio6_1, false);
     robotController = &Controller1;
     driveType = ARCADE;
   }
   LeftDriveSmart = motor_group(leftMotorA, leftMotorB);
-  RightDriveSmart = motor_group(rightMotorA, rightMotorB);
-  Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, 3.25 * 3.14, 5, 8, inches, 84.0 / 60.0);
+  RightDriveSmart = motor_group(rightMotorA, rightMotorB);  
 }
 
-int Robot::teleop() {
-  while (true) {
-    bool shoot = false;
-    int milliseconds = 0;
+void Robot::teleop() {
+  bool shoot = true;
+  int milliseconds = 0;
 
-    bool stopLeft = true;
-    bool stopRight = true;
+  bool stopLeft = true;
+  bool stopRight = true;
 
-    bool L1 = robotController->ButtonL1.pressing();
-    bool L2 = robotController->ButtonL2.pressing();
-    bool R1 = robotController->ButtonR1.pressing();
-    bool R2 = robotController->ButtonR2.pressing();
-    bool A = robotController->ButtonA.pressing();
+  bool L1 = robotController->ButtonL1.pressing();
+  bool L2 = robotController->ButtonL2.pressing();
+  bool R1 = robotController->ButtonR1.pressing();
+  bool R2 = robotController->ButtonR2.pressing();
+  bool A = robotController->ButtonA.pressing();
 
-    int leftSpeed = 10;  // robotController->Axis3.position()^3;
-    int rightSpeed = 10; // robotController->Axis2.position()^3;
+  int leftSpeed = Controller1.Axis3.value()^3;
+  int rightSpeed = Controller1.Axis2.position()^3;
 
-    if (abs(leftSpeed) <= 5) {
-      if (stopLeft) {
-        LeftDriveSmart.stop();
-        stopLeft = false;
-      }
-    } else {
-      stopLeft = true;
+  Controller1.Screen.print(leftSpeed);
+
+  if (abs(leftSpeed) > 5) {
+    Controller1.Screen.print("DRIVING");
+    if (driveType == ARCADE) {
+      LeftDriveSmart.setVelocity((Controller1.Axis3.value() ^
+                                  3 + Controller1.Axis1.value() ^ 3),
+                                  velocityUnits::pct);
+    } else if (driveType == TANK) {
+      LeftDriveSmart.setVelocity(leftSpeed, velocityUnits::pct);
     }
-    if (abs(rightSpeed) <= 5) {
-      if (stopRight) {
-        RightDriveSmart.stop();
-        stopRight = false;
-      }
-    } else {
-      stopRight = true;
-    }
-
-    if (!stopLeft) {
-      if (driveType == ARCADE) {
-        LeftDriveSmart.setVelocity((robotController->Axis3.value() ^
-                                    3 + robotController->Axis1.value() ^ 3),
-                                    velocityUnits::pct);
-      } else if (driveType == TANK) {
-        LeftDriveSmart.setVelocity(leftSpeed, velocityUnits::pct);
-      }
-      LeftDriveSmart.spin(forward);
-    }
-    if (!stopRight) {
-      if (driveType == ARCADE) {
-        RightDriveSmart.setVelocity((robotController->Axis3.value() ^
-                                      3 - robotController->Axis1.value() ^ 3),
-                                    velocityUnits::pct);
-      } else if (driveType == TANK) {
-        RightDriveSmart.setVelocity(rightSpeed, velocityUnits::pct);
-      }
-      RightDriveSmart.spin(forward);
-    }
-
-    if (L1 || L2) {
-      leftIntake.spin(L1 ? reverse : forward, 100, percentUnits::pct);
-      rightIntake.spin(L1 ? forward : reverse, 100, percentUnits::pct);
-    }
-
-    if (R1 || R2) {
-      rightIntake.spin(R1 ? forward : reverse, 100, percentUnits::pct);
-      rollerBack.spin(R1 ? forward : reverse, 100, percentUnits::pct);
-      leftIntake.spin(R1 ? forward : reverse, 100, percentUnits::pct);
-      yeet.spin(reverse, R1 ? 15 : 100, percentUnits::pct);
-    }
-
-    if (A) {
-      if (shoot) {
-        if (vex::timer::system() > milliseconds + 100) {
-          yeet.spin(forward, 100, percentUnits::pct);
-          rollerBack.spin(forward, 100, percentUnits::pct);
-        } else {
-          rightIntake.spin(reverse, 100, percentUnits::pct);
-          rollerBack.spin(reverse, 100, percentUnits::pct);
-          leftIntake.spin(reverse, 100, percentUnits::pct);
-          yeet.spin(reverse, 100, percentUnits::pct);
-        }
-      } else {
-        milliseconds = vex::timer::system();
-        shoot = true;
-      }
-    } else {
-      shoot = false;
-    }
-
-    if (!(L1 || L2 || R1 || R2 || A)) {
-      rightIntake.stop(brakeType::coast);
-      rollerBack.stop(brakeType::coast);
-      leftIntake.stop(brakeType::coast);
-      yeet.stop(brakeType::coast);
-    }
-
-    wait(20, msec);
+    LeftDriveSmart.spin(forward);
+  } else {
+    Controller1.Screen.print("NOT DRIVING");
   }
-  return 0;
+  if (abs(rightSpeed) > 5) {
+    if (driveType == ARCADE) {
+      RightDriveSmart.setVelocity((Controller1.Axis3.value() ^
+                                    3 - Controller1.Axis1.value() ^ 3),
+                                  velocityUnits::pct);
+    } else if (driveType == TANK) {
+      RightDriveSmart.setVelocity(rightSpeed, velocityUnits::pct);
+    }
+    RightDriveSmart.spin(forward);
+  }
+
+  if (L1 || L2) {
+    leftIntake.spin(L1 ? reverse : forward, 100, percentUnits::pct);
+    rightIntake.spin(L1 ? forward : reverse, 100, percentUnits::pct);
+  }
+
+  if (R1 || R2) {
+    rightIntake.spin(R1 ? forward : reverse, 100, percentUnits::pct);
+    rollerBack.spin(R1 ? forward : reverse, 100, percentUnits::pct);
+    leftIntake.spin(R1 ? forward : reverse, 100, percentUnits::pct);
+    yeet.spin(reverse, R1 ? 15 : 100, percentUnits::pct);
+  }
+
+  if (A) {
+    if (shoot) {
+      if (vex::timer::system() > milliseconds + 100) {
+        yeet.spin(forward, 100, percentUnits::pct);
+        rollerBack.spin(forward, 100, percentUnits::pct);
+      } else {
+        rightIntake.spin(reverse, 100, percentUnits::pct);
+        rollerBack.spin(reverse, 100, percentUnits::pct);
+        leftIntake.spin(reverse, 100, percentUnits::pct);
+        yeet.spin(reverse, 100, percentUnits::pct);
+      }
+    } else {
+      milliseconds = vex::timer::system();
+      shoot = true;
+    }
+  } else {
+    shoot = false;
+  }
+
+  if (!(L1 || L2 || R1 || R2 || A)) {
+    rightIntake.stop(brakeType::coast);
+    rollerBack.stop(brakeType::coast);
+    leftIntake.stop(brakeType::coast);
+    yeet.stop(brakeType::coast);
+  }
 }
 
 void Robot::driveStraight(float percent, float dist, float accPercent) {
@@ -185,8 +170,4 @@ void Robot::turnToAngle(float percent, float turnAngle) {
   }
   RightDriveSmart.stop();
   LeftDriveSmart.stop();
-}
-
-void Robot::userControl(void) {
-  vex::task controlLoop(Robot::teleop);
 }

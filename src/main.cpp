@@ -7,16 +7,33 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
-#include "../include/robot-config.cpp"
+#include "../include/robot.cpp"
+#include <thread> 
 
 competition Competition;
+
+int mainTeleop() {
+  Robot mainBot(false);
+  Robot tetherBot(true);
+  while(true) {
+    mainBot.teleop();
+    this_thread::sleep_for(10);
+    tetherBot.teleop();
+    this_thread::sleep_for(10);
+  }
+  return 0;
+}
+
+void userControl(void) {
+  task controlLoop1(mainTeleop);
+}
 
 void autonomous() {
   // rollerBack.spin(forward, 100, percentUnits::pct);
   // task::sleep(1000);
   // rollerBack.stop();
   // driveStraight(40, 48);
-  turnToAngle(100, 180);
+  // turnToAngle(100, 180);
 }
 
 void pre_auton() {

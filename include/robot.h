@@ -3,13 +3,13 @@
 
 using namespace vex;
 // VEXcode devices
-extern drivetrain Drivetrain;
-extern controller Controller1(primary);
-extern controller Controller2(controllerType::partner);
+
+extern controller Controller1;
+extern controller Controller2;
 
 class Robot {
   public:
-    Robot();
+    Robot(bool tether);
     motor rollerBack;
     motor leftMotorA;
     motor leftMotorB;
@@ -19,13 +19,12 @@ class Robot {
     motor rightIntake;
     motor yeet;
 
+    controller Controller1;
+    controller Controller2;
+
     motor_group LeftDriveSmart;
     motor_group RightDriveSmart;
 
-    drivetrain Drivetrain;
-
-    controller Controller1;
-    controller Controller2;
     controller* robotController;
 
     void driveStraight(float percent, float dist);
@@ -33,8 +32,7 @@ class Robot {
     void turnToAngle(float percent, float turnAngle);
 
     void userControl( void );
-    void init( bool tether );
-    int teleop( void );
+    void teleop( void );
 
     enum DriveType { ARCADE, TANK };
     DriveType driveType;
