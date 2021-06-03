@@ -4,12 +4,12 @@
 using namespace vex;
 // VEXcode devices
 
-extern controller Controller1;
-extern controller Controller2;
+// extern controller Controller1;
+// extern controller Controller2;
 
 class Robot {
   public:
-    Robot(bool tether);
+    Robot(bool tether, controller* c);
     motor rollerBack;
     motor leftMotorA;
     motor leftMotorB;
@@ -19,21 +19,24 @@ class Robot {
     motor rightIntake;
     motor yeet;
 
-    controller Controller1;
-    controller Controller2;
-
-    motor_group LeftDriveSmart;
-    motor_group RightDriveSmart;
-
     controller* robotController;
 
     void driveStraight(float percent, float dist);
     void driveStraight(float percent, float dist, float accPercent);
     void turnToAngle(float percent, float turnAngle);
+    void startIntake();
+    void stopIntake();
 
     void userControl( void );
     void teleop( void );
+    void init();
+    void setLeftVelocity(directionType d, double percent);
+    void setRightVelocity(directionType d, double percent);
+    void stopLeft();
+    void stopRight();
 
     enum DriveType { ARCADE, TANK };
     DriveType driveType;
+    bool shootAllowed = true;
+    float turnTargetMultiplier;
 };
