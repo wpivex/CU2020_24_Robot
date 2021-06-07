@@ -2,7 +2,7 @@
 #include <math.h>
 
 Robot::Robot(bool tether, controller* c) : rollerBack(0), leftMotorA(0), leftMotorB(0), rightMotorA(0), rightMotorB(0), 
-leftIntake(0), rightIntake(0), yeet(0) {
+leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
   if (tether) {
     leftMotorA = motor(PORT1, ratio18_1, true);
     leftMotorB = motor(PORT5, ratio18_1, false);
@@ -13,7 +13,7 @@ leftIntake(0), rightIntake(0), yeet(0) {
     rightIntake = motor(PORT8, ratio6_1, true);
     leftIntake = motor(PORT10, ratio6_1, false);
     driveType = ARCADE;
-    turnTargetMultiplier = 2.2;
+    turnTargetMultiplier = 2.55;
   } else {
     leftMotorA = motor(PORT11, ratio18_1, false);
     leftMotorB = motor(PORT12, ratio18_1, true);
@@ -24,8 +24,9 @@ leftIntake(0), rightIntake(0), yeet(0) {
     rightIntake = motor(PORT17, ratio6_1, true);
     leftIntake = motor(PORT16, ratio6_1, false);
     driveType = TANK;
-    turnTargetMultiplier = 3.5;
+    turnTargetMultiplier = 14.1;
   }
+  turningWheel = motor(PORT15, ratio18_1, true);
   robotController = c; 
 }
 
@@ -42,7 +43,7 @@ void Robot::teleop() {
   float leftJoystick = (driveType == ARCADE) ? robotController->Axis3.position()^3 + robotController->Axis1.position()^3: robotController->Axis3.position()^3;
   float rightJoystick = (driveType == ARCADE) ? robotController->Axis3.position()^3 + robotController->Axis1.position()^3: robotController->Axis2.position()^3;
 
-  if (abs(leftJoystick) > 5) {
+  if (fabs(leftJoystick) > 5) {
     float percent = (driveType == ARCADE) ? (pow((robotController->Axis3.position()/100.00f), 3.00f) + pow((robotController->Axis1.position()/100.00f), 5.00f))*100.00f : leftJoystick;
     leftMotorA.spin(forward, percent, percentUnits::pct);
     leftMotorB.spin(forward, percent, percentUnits::pct);
@@ -51,7 +52,7 @@ void Robot::teleop() {
     leftMotorB.stop();
   }
 
-  if (abs(rightJoystick) > 5) {
+  if (fabs(rightJoystick) > 5) {
     float percent = (driveType == ARCADE) ? (pow((robotController->Axis3.position()/100.00f), 3.00f) - pow((robotController->Axis1.position()/100.00f), 5.00f))*100.00f : rightJoystick;
     rightMotorA.spin(forward, percent, percentUnits::pct);
     rightMotorB.spin(forward, percent, percentUnits::pct);
@@ -100,61 +101,69 @@ void Robot::teleop() {
 }
 
 void Robot::driveStraight(float percent, float dist, float accPercent) {
-  float startPos = (leftMotorA.position(degrees) + rightMotorA.position(degrees)) / 2;
-  float currPos = (leftMotorA.position(degrees) + rightMotorA.position(degrees)) / 2;
+  float rightStart = rightMotorA.position(degrees);
+  float leftStart = leftMotorA.position(degrees);
+  float leftCurr = 0;
+  float rightCurr = 0;
   float sumErr = 0;
-  float target = 25.6 * dist;
-  float currDist = currPos - startPos;
+  float target = 25.6 * fabs(dist);
+  float currDist = 0;
   while (currDist < target) {
-    float pidPercent = (target - currDist) / target + sumErr * 0.001;
+    float pidPercent = fabs(target - currDist) / target + sumErr * 0.001;
     pidPercent = std::max(-1.0f, std::min(1.0f, pidPercent));
     float modPercent = percent;
-    if (currDist < accPercent && percent > 5) {
-      modPercent = 5 + currDist / accPercent * (percent - 5);
+    if (fabs(currDist / target) < accPercent && percent > 5) {
+      modPercent = 5 + fabs(currDist / (target * accPercent)) * (percent - 5);
     }
-    setLeftVelocity(forward, modPercent * pidPercent);
-    setRightVelocity(forward, modPercent * pidPercent);
-    currDist = ((leftMotorA.position(degrees) + rightMotorA.position(degrees)) / 2) - startPos;
+    leftCurr = leftMotorA.position(degrees);
+    rightCurr = rightMotorA.position(degrees);
+    float straightCorr = fabs(rightCurr - rightStart) / fabs(leftCurr - leftStart);
+    currDist = (fabs(leftCurr - leftStart) + fabs(rightCurr - rightStart)) / 2;
     sumErr = std::max(-100.0f, std::min(100.0f, sumErr + currDist));
+    setLeftVelocity(dist > 0 ? forward : reverse, modPercent * pidPercent /* straightCorr*/);
+    setRightVelocity(dist > 0 ? forward : reverse, modPercent * pidPercent);
+  }
+  stopLeft();
+  stopRight();
+}
+
+void Robot::driveTimed(float percent, float driveTime) {
+  int milliseconds = vex::timer::system();
+  while (vex::timer::system() < milliseconds + driveTime) {
+    setLeftVelocity(forward, percent);
+    setRightVelocity(forward, percent);
   }
   stopLeft();
   stopRight();
 }
 
 void Robot::driveStraight(float percent, float dist) {
-  driveStraight(percent, dist, 10.0);
+  driveStraight(percent, dist, 0.1); //acc is from 0 to 1
 }
 
 void Robot::turnToAngle(float percent, float turnAngle) {
-  // left is positive, ew
   motor accurateSide = turnAngle > 0 ? rightMotorA : leftMotorA; // this is super cursed help
   motor badSide = turnAngle < 0 ? rightMotorA : leftMotorA;
-  float startPos = accurateSide.position(degrees);
-  float currPos = accurateSide.position(degrees);
-  float startPosBad = accurateSide.position(degrees);
-  float currPosBad = accurateSide.position(degrees);
-  float target = abs(turnAngle * turnTargetMultiplier);
-  float goodError = 0;
-  float badError = 0;
-  float totalError = 0;
-  while (true /*abs(currPos - startPos) < target*/) {
-    setLeftVelocity(turnAngle < 0 ? reverse : forward, percent + totalError*5);
+  float startPos = (driveType == TANK) ? turningWheel.position(degrees) : accurateSide.position(degrees);
+  float currPos = startPos;
+  float target = fabs(turnAngle * turnTargetMultiplier);
+  // float goodError = 0;
+  // float badError = 0;
+  // float totalError = 0;
+  while (fabs(currPos - startPos) < target) {
+    setLeftVelocity(turnAngle < 0 ? reverse : forward, percent);
     setRightVelocity(turnAngle < 0 ? forward : reverse, percent);
-    currPos = accurateSide.position(degrees);
-    currPosBad = badSide.position(degrees);
-    goodError = abs(currPos - startPos);
-    badError = abs(currPosBad - startPosBad);
-    totalError = goodError - badError;
-    robotController->Screen.clearScreen();
-    robotController->Screen.setCursor(0,0);
-    robotController->Screen.print(goodError);
-    robotController->Screen.newLine();
-    robotController->Screen.setCursor(3,0);
-    robotController->Screen.print(badError);
-    robotController->Screen.newLine();
-    robotController->Screen.setCursor(10,10);
-    robotController->Screen.print(totalError);
+    if(driveType == TANK) {
+      turningWheel.spin(turnAngle < 0 ? reverse : forward, 100, percentUnits::pct);
+    }
+    currPos = (driveType == TANK) ? turningWheel.position(degrees) : accurateSide.position(degrees);
+    // goodError = fabs(currPos - startPos);
+    // totalError = goodError - badError;
+    // robotController->Screen.clearScreen();
+    // robotController->Screen.setCursor(0,0);
+    // robotController->Screen.print(turningWheel.position(degrees));
   }
+  turningWheel.stop();
   stopLeft();
   stopRight();
 }
@@ -166,11 +175,38 @@ void Robot::startIntake() {
   yeet.spin(reverse, 15, percentUnits::pct);
 }
 
+void Robot::startOuttake() {
+  rightIntake.spin(reverse, 50, percentUnits::pct);
+  rollerBack.spin(reverse, 50, percentUnits::pct);
+  leftIntake.spin(reverse, 50, percentUnits::pct);
+  yeet.spin(reverse, 50, percentUnits::pct);
+}
+
 void Robot::stopIntake() {
   rightIntake.stop();
   rollerBack.stop();
   leftIntake.stop();
   yeet.stop();
+}
+
+void Robot::shoot(float shootTime) {
+  int milliseconds = vex::timer::system();
+  while(vex::timer::system() < milliseconds + 100) {
+    yeet.spin(reverse, 100, percentUnits::pct);
+    rollerBack.spin(reverse, 100, percentUnits::pct);
+  }
+  milliseconds = vex::timer::system();
+  while(vex::timer::system() < milliseconds + 200) {
+    yeet.spin(reverse, 100, percentUnits::pct);
+    rollerBack.spin(forward, 100, percentUnits::pct);
+  }
+  milliseconds = vex::timer::system();
+  while(vex::timer::system() < milliseconds + shootTime) {
+    yeet.spin(forward, 100, percentUnits::pct);
+    rollerBack.spin(forward, 100, percentUnits::pct);
+  }
+  yeet.stop();
+  rollerBack.stop();
 }
 
 void Robot::setLeftVelocity(directionType d, double percent) {

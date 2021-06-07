@@ -17,15 +17,19 @@ class Robot {
     motor rightMotorB;
     motor leftIntake;
     motor rightIntake;
+    motor turningWheel;
     motor yeet;
 
     controller* robotController;
 
     void driveStraight(float percent, float dist);
     void driveStraight(float percent, float dist, float accPercent);
+    void driveTimed(float percent, float driveTime);
     void turnToAngle(float percent, float turnAngle);
     void startIntake();
     void stopIntake();
+    void startOuttake();
+    void shoot(float shootTime);
 
     void userControl( void );
     void teleop( void );
