@@ -2,10 +2,6 @@
 #include "vex.h"
 
 using namespace vex;
-// VEXcode devices
-
-// extern controller Controller1;
-// extern controller Controller2;
 
 class Robot {
   public:
@@ -42,5 +38,6 @@ class Robot {
     enum DriveType { ARCADE, TANK };
     DriveType driveType;
     bool shootAllowed = true;
+    bool isTether;
     float turnTargetMultiplier;
 };

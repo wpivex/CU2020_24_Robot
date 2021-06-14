@@ -12,7 +12,7 @@ leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
     yeet = motor(PORT7, ratio18_1, true);
     rightIntake = motor(PORT8, ratio6_1, true);
     leftIntake = motor(PORT10, ratio6_1, false);
-    driveType = ARCADE;
+    driveType = TANK;
     turnTargetMultiplier = 2.55;
   } else {
     leftMotorA = motor(PORT11, ratio18_1, false);
@@ -23,9 +23,10 @@ leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
     yeet = motor(PORT19, ratio6_1, false);
     rightIntake = motor(PORT17, ratio6_1, true);
     leftIntake = motor(PORT16, ratio6_1, false);
-    driveType = TANK;
+    driveType = ARCADE;
     turnTargetMultiplier = 14.1;
   }
+  isTether = tether;
   turningWheel = motor(PORT15, ratio18_1, true);
   robotController = c; 
 }
@@ -60,6 +61,8 @@ void Robot::teleop() {
     rightMotorA.stop();
     rightMotorB.stop();
   }
+
+  if(!isTether) { turningWheel.spin(reverse, pow((robotController->Axis1.position()/100.00f), 5.00f)*100.00f, pct); }
 
   if (L1 || L2) {
     leftIntake.spin(L1 ? reverse : forward, 100, percentUnits::pct);
@@ -144,24 +147,22 @@ void Robot::driveStraight(float percent, float dist) {
 void Robot::turnToAngle(float percent, float turnAngle) {
   motor accurateSide = turnAngle > 0 ? rightMotorA : leftMotorA; // this is super cursed help
   motor badSide = turnAngle < 0 ? rightMotorA : leftMotorA;
-  float startPos = (driveType == TANK) ? turningWheel.position(degrees) : accurateSide.position(degrees);
+  float startPos = !isTether ? turningWheel.position(degrees) : accurateSide.position(degrees);
   float currPos = startPos;
   float target = fabs(turnAngle * turnTargetMultiplier);
-  // float goodError = 0;
-  // float badError = 0;
-  // float totalError = 0;
+  float sumErr = 0;
   while (fabs(currPos - startPos) < target) {
-    setLeftVelocity(turnAngle < 0 ? reverse : forward, percent);
-    setRightVelocity(turnAngle < 0 ? forward : reverse, percent);
-    if(driveType == TANK) {
-      turningWheel.spin(turnAngle < 0 ? reverse : forward, 100, percentUnits::pct);
+    float currErrorP = fmin(1, fmax(-1, 2*(target - fabs(currPos - startPos)) / target) + sumErr*0.000001);
+    sumErr += currErrorP;
+    if(!isTether) {
+      setLeftVelocity(turnAngle < 0 ? reverse : forward, currErrorP*percent/1.8);
+      setRightVelocity(turnAngle < 0 ? forward : reverse, currErrorP*percent/1.8);
+      turningWheel.spin(turnAngle > 0 ? reverse : forward, currErrorP*percent, percentUnits::pct);
+    } else {
+      setLeftVelocity(turnAngle < 0 ? reverse : forward, currErrorP*percent);
+      setRightVelocity(turnAngle < 0 ? forward : reverse, currErrorP*percent);
     }
-    currPos = (driveType == TANK) ? turningWheel.position(degrees) : accurateSide.position(degrees);
-    // goodError = fabs(currPos - startPos);
-    // totalError = goodError - badError;
-    // robotController->Screen.clearScreen();
-    // robotController->Screen.setCursor(0,0);
-    // robotController->Screen.print(turningWheel.position(degrees));
+    currPos = !isTether ? turningWheel.position(degrees) : accurateSide.position(degrees);
   }
   turningWheel.stop();
   stopLeft();
@@ -191,7 +192,7 @@ void Robot::stopIntake() {
 
 void Robot::shoot(float shootTime) {
   int milliseconds = vex::timer::system();
-  while(vex::timer::system() < milliseconds + 100) {
+  while(vex::timer::system() < milliseconds + 50) {
     yeet.spin(reverse, 100, percentUnits::pct);
     rollerBack.spin(reverse, 100, percentUnits::pct);
   }
