@@ -6,13 +6,14 @@ leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
   if (tether) {
     leftMotorA = motor(PORT1, ratio18_1, true);
     leftMotorB = motor(PORT5, ratio18_1, false);
-    rightMotorA = motor(PORT3, ratio18_1, true);
-    rightMotorB = motor(PORT4, ratio18_1, false);
+    rightMotorA = motor(PORT3, ratio18_1, false);
+    rightMotorB = motor(PORT4, ratio18_1, true);
     rollerBack = motor(PORT6, ratio18_1, false);
     yeet = motor(PORT7, ratio18_1, true);
     rightIntake = motor(PORT8, ratio6_1, true);
     leftIntake = motor(PORT10, ratio6_1, false);
-    driveType = TANK;
+    turningWheel = motor(PORT20, ratio18_1, true);
+    driveType = ARCADE;
     turnTargetMultiplier = 2.55;
   } else {
     leftMotorA = motor(PORT11, ratio18_1, false);
@@ -23,11 +24,12 @@ leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
     yeet = motor(PORT19, ratio6_1, false);
     rightIntake = motor(PORT17, ratio6_1, true);
     leftIntake = motor(PORT16, ratio6_1, false);
+    turningWheel = motor(PORT15, ratio18_1, true);
     driveType = ARCADE;
     turnTargetMultiplier = 14.1;
   }
   isTether = tether;
-  turningWheel = motor(PORT15, ratio18_1, true);
+  
   robotController = c; 
 }
 
@@ -62,7 +64,7 @@ void Robot::teleop() {
     rightMotorB.stop();
   }
 
-  if(!isTether) { turningWheel.spin(reverse, pow((robotController->Axis1.position()/100.00f), 5.00f)*100.00f, pct); }
+  if(driveType == ARCADE) { turningWheel.spin(reverse, pow((robotController->Axis1.position()/100.00f), 5.00f)*100.00f, pct); }
 
   if (L1 || L2) {
     leftIntake.spin(L1 ? reverse : forward, 100, percentUnits::pct);
@@ -104,10 +106,7 @@ void Robot::teleop() {
 }
 
 void Robot::driveStraight(float percent, float dist, float accPercent) {
-  float rightStart = rightMotorA.position(degrees);
-  float leftStart = leftMotorA.position(degrees);
-  float leftCurr = 0;
-  float rightCurr = 0;
+  float startPos = (leftMotorA.position(degrees) + rightMotorA.position(degrees)) / 2;
   float sumErr = 0;
   float target = 25.6 * fabs(dist);
   float currDist = 0;
@@ -118,12 +117,9 @@ void Robot::driveStraight(float percent, float dist, float accPercent) {
     if (fabs(currDist / target) < accPercent && percent > 5) {
       modPercent = 5 + fabs(currDist / (target * accPercent)) * (percent - 5);
     }
-    leftCurr = leftMotorA.position(degrees);
-    rightCurr = rightMotorA.position(degrees);
-    float straightCorr = fabs(rightCurr - rightStart) / fabs(leftCurr - leftStart);
-    currDist = (fabs(leftCurr - leftStart) + fabs(rightCurr - rightStart)) / 2;
+    currDist = fabs(((leftMotorA.position(degrees) + rightMotorA.position(degrees)) / 2) - startPos);
     sumErr = std::max(-100.0f, std::min(100.0f, sumErr + currDist));
-    setLeftVelocity(dist > 0 ? forward : reverse, modPercent * pidPercent /* straightCorr*/);
+    setLeftVelocity(dist > 0 ? forward : reverse, modPercent * pidPercent);
     setRightVelocity(dist > 0 ? forward : reverse, modPercent * pidPercent);
   }
   stopLeft();
@@ -145,8 +141,7 @@ void Robot::driveStraight(float percent, float dist) {
 }
 
 void Robot::turnToAngle(float percent, float turnAngle) {
-  motor accurateSide = turnAngle > 0 ? rightMotorA : leftMotorA; // this is super cursed help
-  motor badSide = turnAngle < 0 ? rightMotorA : leftMotorA;
+  motor accurateSide = turnAngle > 0 ? rightMotorA : leftMotorA;
   float startPos = !isTether ? turningWheel.position(degrees) : accurateSide.position(degrees);
   float currPos = startPos;
   float target = fabs(turnAngle * turnTargetMultiplier);

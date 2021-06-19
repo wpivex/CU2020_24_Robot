@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*                                                                            */
-/*    Module:       main.cpp                                                  */
-/*    Author:       kohmeikadoya                                              */
-/*    Created:      Mon Nov 09 2020                                           */
-/*    Description:  V5 project                                                */
-/*                                                                            */
-/*----------------------------------------------------------------------------*/
-
 #include "../include/robot.cpp"
 
 competition Competition;
