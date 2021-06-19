@@ -66,9 +66,9 @@ void Robot::teleop() {
 
   if(driveType == ARCADE) { turningWheel.spin(reverse, pow((robotController->Axis1.position()/100.00f), 5.00f)*100.00f, pct); }
 
-  if (L1 || L2) {
-    leftIntake.spin(L1 ? reverse : forward, 100, percentUnits::pct);
-    rightIntake.spin(L1 ? forward : reverse, 100, percentUnits::pct);
+  if (L2) {
+        rollerBack.spin(reverse, 100, percentUnits::pct);
+        yeet.spin(reverse, 100, percentUnits::pct);
   }
 
   if (R1 || R2) {
@@ -78,7 +78,7 @@ void Robot::teleop() {
     yeet.spin(reverse, R1 ? 15 : 100, percentUnits::pct);
   }
 
-  if (A) {
+  if (L1) {
     if (shootAllowed) {
       if (vex::timer::system() > milliseconds + 100) {
         yeet.spin(forward, 100, percentUnits::pct);
