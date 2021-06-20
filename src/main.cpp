@@ -24,7 +24,7 @@ void userControl(void) {
 int mainAuto(void) {
   this_thread::sleep_for(10);
   mainBotP->driveStraight(30, 26);
-  mainBotP->turnToAngle(90, 65);
+  mainBotP->turnToAngle(60, -77);
   mainBotP->startIntake();
   mainBotP->driveTimed(30, 2500);
   mainBotP->driveStraight(30, -3);
@@ -37,9 +37,9 @@ int mainAuto(void) {
   mainBotP->shoot(2000);
   mainBotP->startOuttake();
   mainBotP->driveStraight(30, -12);
-  mainBotP->turnToAngle(100, -53);
+  mainBotP->turnToAngle(60, 55);
   mainBotP->startIntake();
-  mainBotP->driveStraight(40, 63);
+  mainBotP->driveStraight(40, 56);
   mainBotP->stopIntake();
   return 0;
 }
@@ -47,29 +47,29 @@ int mainAuto(void) {
 int tetherAuto(void) {
   this_thread::sleep_for(8000);
   tetherBotP->driveStraight(30, 24);
-  tetherBotP->turnToAngle(20, -129);
+  tetherBotP->turnToAngle(60, 77);
   tetherBotP->startIntake();
-  tetherBotP->driveTimed(30, 2000);
-  tetherBotP->driveStraight(30, -3);
+  tetherBotP->driveTimed(30, 3000);
+  tetherBotP->driveStraight(30, -5);
   tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -3);
+  tetherBotP->driveStraight(30, -5);
   tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -3);
+  tetherBotP->driveStraight(30, -5);
   tetherBotP->driveTimed(30, 500);
   tetherBotP->stopIntake();
   tetherBotP->shoot(700);
   tetherBotP->shoot(700);
-  tetherBotP->driveStraight(30, -30);
   tetherBotP->startOuttake();
-  tetherBotP->turnToAngle(100, 60);
+  tetherBotP->driveStraight(30, -30);
+  tetherBotP->turnToAngle(60, -55);
   tetherBotP->stopIntake();
   tetherBotP->startIntake();
   tetherBotP->driveTimed(30, 3000);
-  tetherBotP->driveStraight(30, -3);
+  tetherBotP->driveStraight(30, -5);
   tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -3);
+  tetherBotP->driveStraight(30, -5);
   tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -3);
+  tetherBotP->driveStraight(30, -5);
   tetherBotP->driveTimed(30, 500);
   tetherBotP->stopIntake();
   tetherBotP->driveStraight(30, -6);
@@ -84,10 +84,6 @@ int tetherAuto(void) {
 void autonomous() {
   thread auto2(tetherAuto);
   thread auto1(mainAuto);
-  // std::thread auto2(tetherAuto);
-  // std::thread auto1(mainAuto);
-  // task auto1(mainAuto);
-  // task auto2(tetherAuto);
 }
 
 void pre_auton() {

@@ -14,7 +14,7 @@ leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
     leftIntake = motor(PORT10, ratio6_1, false);
     turningWheel = motor(PORT20, ratio18_1, true);
     driveType = ARCADE;
-    turnTargetMultiplier = 2.55;
+    turnTargetMultiplier = 14.1;
   } else {
     leftMotorA = motor(PORT11, ratio18_1, false);
     leftMotorB = motor(PORT12, ratio18_1, true);
@@ -141,23 +141,17 @@ void Robot::driveStraight(float percent, float dist) {
 }
 
 void Robot::turnToAngle(float percent, float turnAngle) {
-  motor accurateSide = turnAngle > 0 ? rightMotorA : leftMotorA;
-  float startPos = !isTether ? turningWheel.position(degrees) : accurateSide.position(degrees);
+  float startPos = turningWheel.position(degrees);
   float currPos = startPos;
   float target = fabs(turnAngle * turnTargetMultiplier);
   float sumErr = 0;
   while (fabs(currPos - startPos) < target) {
     float currErrorP = fmin(1, fmax(-1, 2*(target - fabs(currPos - startPos)) / target) + sumErr*0.000001);
     sumErr += currErrorP;
-    if(!isTether) {
-      setLeftVelocity(turnAngle < 0 ? reverse : forward, currErrorP*percent/1.8);
-      setRightVelocity(turnAngle < 0 ? forward : reverse, currErrorP*percent/1.8);
-      turningWheel.spin(turnAngle > 0 ? reverse : forward, currErrorP*percent, percentUnits::pct);
-    } else {
-      setLeftVelocity(turnAngle < 0 ? reverse : forward, currErrorP*percent);
-      setRightVelocity(turnAngle < 0 ? forward : reverse, currErrorP*percent);
-    }
-    currPos = !isTether ? turningWheel.position(degrees) : accurateSide.position(degrees);
+    setLeftVelocity(turnAngle < 0 ? reverse : forward, currErrorP*percent/2.5);
+    setRightVelocity(turnAngle < 0 ? forward : reverse, currErrorP*percent/2.5);
+    turningWheel.spin(turnAngle > 0 ? reverse : forward, currErrorP*percent, percentUnits::pct);
+    currPos = turningWheel.position(degrees);
   }
   turningWheel.stop();
   stopLeft();
