@@ -16,14 +16,14 @@ leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
     driveType = ARCADE;
     turnTargetMultiplier = 14.1;
   } else {
-    leftMotorA = motor(PORT11, ratio18_1, false);
-    leftMotorB = motor(PORT12, ratio18_1, true);
+    leftMotorA = motor(PORT12, ratio18_1, false);
+    leftMotorB = motor(PORT16, ratio18_1, true);
     rightMotorA = motor(PORT13, ratio18_1, false);
     rightMotorB = motor(PORT14, ratio18_1, true);
     rollerBack = motor(PORT18, ratio18_1, false);
     yeet = motor(PORT19, ratio6_1, false);
     rightIntake = motor(PORT17, ratio6_1, true);
-    leftIntake = motor(PORT16, ratio6_1, false);
+    leftIntake = motor(PORT11, ratio6_1, false);
     turningWheel = motor(PORT15, ratio18_1, true);
     driveType = ARCADE;
     turnTargetMultiplier = 14.1;
@@ -66,7 +66,7 @@ void Robot::teleop() {
 
   if(driveType == ARCADE) { turningWheel.spin(reverse, pow((robotController->Axis1.position()/100.00f), 5.00f)*100.00f, pct); }
 
-  if (L2) {
+  if (isTether? L2 : L1) {
         rollerBack.spin(reverse, 100, percentUnits::pct);
         yeet.spin(reverse, 100, percentUnits::pct);
   }
@@ -78,7 +78,7 @@ void Robot::teleop() {
     yeet.spin(reverse, R1 ? 15 : 100, percentUnits::pct);
   }
 
-  if (L1) {
+  if (isTether? L1 : L2) {
     if (shootAllowed) {
       if (vex::timer::system() > milliseconds + 100) {
         yeet.spin(forward, 100, percentUnits::pct);
@@ -181,14 +181,9 @@ void Robot::stopIntake() {
 
 void Robot::shoot(float shootTime) {
   int milliseconds = vex::timer::system();
-  while(vex::timer::system() < milliseconds + 50) {
+  while(vex::timer::system() < milliseconds + 400) {
     yeet.spin(reverse, 100, percentUnits::pct);
     rollerBack.spin(reverse, 100, percentUnits::pct);
-  }
-  milliseconds = vex::timer::system();
-  while(vex::timer::system() < milliseconds + 200) {
-    yeet.spin(reverse, 100, percentUnits::pct);
-    rollerBack.spin(forward, 100, percentUnits::pct);
   }
   milliseconds = vex::timer::system();
   while(vex::timer::system() < milliseconds + shootTime) {

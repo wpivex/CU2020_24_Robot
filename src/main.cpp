@@ -10,9 +10,7 @@ Robot* tetherBotP;
 int mainTeleop() {
   while(true) {
     mainBotP->teleop();
-    // task::sleep(10);
     tetherBotP->teleop();
-    // task::sleep(10);
   }
   return 0;
 }
@@ -22,62 +20,64 @@ void userControl(void) {
 }
 
 int mainAuto(void) {
-  this_thread::sleep_for(10);
-  mainBotP->driveStraight(30, 26);
-  mainBotP->turnToAngle(60, -77);
-  mainBotP->startIntake();
-  mainBotP->driveTimed(30, 2500);
-  mainBotP->driveStraight(30, -3);
-  mainBotP->driveTimed(30, 500);
-  mainBotP->driveStraight(30, -3);
-  mainBotP->driveTimed(30, 500);
-  this_thread::sleep_for(1000);
-  mainBotP->stopIntake();
-  mainBotP->shoot(2000);
-  mainBotP->shoot(2000);
-  mainBotP->startOuttake();
-  mainBotP->driveStraight(30, -12);
-  mainBotP->turnToAngle(60, 55);
-  mainBotP->startIntake();
-  mainBotP->driveStraight(40, 56);
-  mainBotP->stopIntake();
+  mainBotP->driveStraight(40, 36);
+  // this_thread::sleep_for(10);
+  // mainBotP->driveStraight(30, 26);
+  // mainBotP->turnToAngle(60, -77);
+  // mainBotP->startIntake();
+  // mainBotP->driveTimed(30, 2500);
+  // mainBotP->driveStraight(30, -3);
+  // mainBotP->driveTimed(30, 500);
+  // mainBotP->driveStraight(30, -3);
+  // mainBotP->driveTimed(30, 500);
+  // this_thread::sleep_for(1000);
+  // mainBotP->stopIntake();
+  // mainBotP->shoot(1000);
+  // mainBotP->shoot(1000);
+  // mainBotP->startOuttake();
+  // mainBotP->driveStraight(30, -12);
+  // mainBotP->turnToAngle(60, 55);
+  // mainBotP->startIntake();
+  // mainBotP->driveStraight(40, 56);
+  // mainBotP->stopIntake();
   return 0;
 }
 
 int tetherAuto(void) {
-  this_thread::sleep_for(8000);
-  tetherBotP->driveStraight(30, 24);
-  tetherBotP->turnToAngle(60, 77);
-  tetherBotP->startIntake();
-  tetherBotP->driveTimed(30, 3000);
-  tetherBotP->driveStraight(30, -5);
-  tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -5);
-  tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -5);
-  tetherBotP->driveTimed(30, 500);
-  tetherBotP->stopIntake();
-  tetherBotP->shoot(700);
-  tetherBotP->shoot(700);
-  tetherBotP->startOuttake();
-  tetherBotP->driveStraight(30, -30);
-  tetherBotP->turnToAngle(60, -55);
-  tetherBotP->stopIntake();
-  tetherBotP->startIntake();
-  tetherBotP->driveTimed(30, 3000);
-  tetherBotP->driveStraight(30, -5);
-  tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -5);
-  tetherBotP->driveTimed(30, 500);
-  tetherBotP->driveStraight(30, -5);
-  tetherBotP->driveTimed(30, 500);
-  tetherBotP->stopIntake();
-  tetherBotP->driveStraight(30, -6);
-  tetherBotP->startIntake();
-  tetherBotP->driveStraight(30, 6);
-  this_thread::sleep_for(1000);
-  tetherBotP->stopIntake();
-  tetherBotP->shoot(700);
+  tetherBotP->driveStraight(40, 36);
+  // this_thread::sleep_for(8000);
+  // tetherBotP->driveStraight(30, 24);
+  // tetherBotP->turnToAngle(60, 77);
+  // tetherBotP->startIntake();
+  // tetherBotP->driveTimed(30, 3000);
+  // tetherBotP->driveStraight(30, -5);
+  // tetherBotP->driveTimed(30, 500);
+  // tetherBotP->driveStraight(30, -5);
+  // tetherBotP->driveTimed(30, 500);
+  // tetherBotP->driveStraight(30, -5);
+  // tetherBotP->driveTimed(30, 500);
+  // tetherBotP->stopIntake();
+  // tetherBotP->shoot(1000);
+  // tetherBotP->shoot(1000);
+  // tetherBotP->startOuttake();
+  // tetherBotP->driveStraight(30, -30);
+  // tetherBotP->turnToAngle(60, -55);
+  // tetherBotP->stopIntake();
+  // tetherBotP->startIntake();
+  // tetherBotP->driveTimed(30, 3000);
+  // tetherBotP->driveStraight(30, -5);
+  // tetherBotP->driveTimed(30, 500);
+  // tetherBotP->driveStraight(30, -5);
+  // tetherBotP->driveTimed(30, 500);
+  // tetherBotP->driveStraight(30, -5);
+  // tetherBotP->driveTimed(30, 500);
+  // tetherBotP->stopIntake();
+  // tetherBotP->driveStraight(30, -6);
+  // tetherBotP->startIntake();
+  // tetherBotP->driveStraight(30, 6);
+  // this_thread::sleep_for(1000);
+  // tetherBotP->stopIntake();
+  // tetherBotP->shoot(1000);
   return 0;
 }
 
