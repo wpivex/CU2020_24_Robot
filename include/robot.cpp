@@ -4,8 +4,8 @@
 Robot::Robot(bool tether, controller* c) : rollerBack(0), leftMotorA(0), leftMotorB(0), rightMotorA(0), rightMotorB(0), 
 leftIntake(0), rightIntake(0), turningWheel(0), yeet(0) {
   if (tether) {
-    leftMotorA = motor(PORT1, ratio18_1, true);
-    leftMotorB = motor(PORT5, ratio18_1, false);
+    leftMotorA = motor(PORT5, ratio18_1, true);
+    leftMotorB = motor(PORT1, ratio18_1, false);
     rightMotorA = motor(PORT3, ratio18_1, false);
     rightMotorB = motor(PORT4, ratio18_1, true);
     rollerBack = motor(PORT6, ratio18_1, false);
@@ -165,11 +165,25 @@ void Robot::startIntake() {
   yeet.spin(reverse, 15, percentUnits::pct);
 }
 
+void Robot::resetShoot() {
+  int milliseconds = vex::timer::system();
+  while(vex::timer::system() < milliseconds + 800) {
+    rollerBack.spin(forward, 100, percentUnits::pct);
+    yeet.spin(reverse, 15, percentUnits::pct);
+  }
+  rollerBack.stop();
+  yeet.stop();
+}
+
 void Robot::startOuttake() {
-  rightIntake.spin(reverse, 50, percentUnits::pct);
-  rollerBack.spin(reverse, 50, percentUnits::pct);
-  leftIntake.spin(reverse, 50, percentUnits::pct);
-  yeet.spin(reverse, 50, percentUnits::pct);
+  startOuttake(50);
+}
+
+void Robot::startOuttake(float percent) {
+  rightIntake.spin(reverse, percent, percentUnits::pct);
+  rollerBack.spin(reverse, percent, percentUnits::pct);
+  leftIntake.spin(reverse, percent, percentUnits::pct);
+  yeet.spin(reverse, percent, percentUnits::pct);
 }
 
 void Robot::stopIntake() {
@@ -181,7 +195,7 @@ void Robot::stopIntake() {
 
 void Robot::shoot(float shootTime) {
   int milliseconds = vex::timer::system();
-  while(vex::timer::system() < milliseconds + 400) {
+  while(vex::timer::system() < milliseconds + 300) {
     yeet.spin(reverse, 100, percentUnits::pct);
     rollerBack.spin(reverse, 100, percentUnits::pct);
   }

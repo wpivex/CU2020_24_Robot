@@ -25,7 +25,9 @@ class Robot {
     void startIntake();
     void stopIntake();
     void startOuttake();
+    void startOuttake(float percent);
     void shoot(float shootTime);
+    void resetShoot();
 
     void userControl( void );
     void teleop( void );
